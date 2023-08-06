@@ -54,16 +54,15 @@ public class NakamaConnection : MonoBehaviour
             return;
         }
 
-        CreateClient();
-        CreateSession(username);
-        CreateSocket();
+        CreateClient(username);
     }
 
-    private void CreateClient() {
+    private void CreateClient(string username) {
         //create a client - with connection related info 
         client = new Client(scheme, host, port, serverKey, UnityWebRequestAdapter.Instance);
         messageText.color = ColorConfig.normalColor;
         messageText.text = "Getting inside the matrix...";
+        CreateSession(username);
     }
 
     public async void CreateSession(string username) {
@@ -76,6 +75,7 @@ public class NakamaConnection : MonoBehaviour
         }
         session = await client.AuthenticateDeviceAsync(SystemInfo.deviceUniqueIdentifier, username);
         Debug.Log(string.Format("[Authentication Success] Session Id : {0} ,Username : {1}", session.UserId, session.Username));
+        CreateSocket();
     }
 
     public async void CreateSocket() {
@@ -85,6 +85,8 @@ public class NakamaConnection : MonoBehaviour
 
         socket.ReceivedMatchmakerMatched += OnRecieveMatchmakerMatched;
         Debug.Log(string.Format("[Socket Connected] Connection Status : {0}", socket.IsConnected));
+
+        FindMatch();
     }
 
     public async void FindMatch() {
@@ -98,6 +100,8 @@ public class NakamaConnection : MonoBehaviour
 
     public async void OnRecieveMatchmakerMatched(IMatchmakerMatched matchMakerMatched) {
         //we found a match
+        messageText.color = ColorConfig.normalColor;
+        messageText.text = "Found Match...";
 
         //join the match
         var match = await socket.JoinMatchAsync(matchMakerMatched);
